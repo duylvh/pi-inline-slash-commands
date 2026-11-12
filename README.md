@@ -13,7 +13,6 @@ please review this /mod
 
 - Enter or Tab fills in `/name ` where you typed it. An inline pick never submits the prompt.
 - A `/` at the start of the message behaves exactly as before, so Enter still runs the command.
-- Tab on a path such as `cat /Us` still completes files.
 
 ## Install
 
