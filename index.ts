@@ -19,13 +19,17 @@ function createProvider(current: AutocompleteProvider): AutocompleteProvider {
 		async getSuggestions(lines, cursorLine, cursorCol, options): Promise<AutocompleteSuggestions | null> {
 			const before = (lines[cursorLine] ?? "").slice(0, cursorCol);
 			const query = inlineSlashQuery(before);
-			const startsMessage = cursorLine === 0 && before.trimStart() === `/${query}`;
-			if (options.force || query === null || startsMessage) {
+			const lineStartCommand = cursorLine === 0 && before.trimStart().startsWith("/");
+			const builtinOwns = lineStartCommand && (query === null || before.trimStart() === `/${query}`);
+			if (options.force || builtinOwns) {
 				return current.getSuggestions(lines, cursorLine, cursorCol, options);
 			}
-			const result = await current.getSuggestions([`/${query}`], 0, query.length + 1, options);
+			const result = query === null ? null : await current.getSuggestions([`/${query}`], 0, query.length + 1, options);
 			if (!result || result.items.length === 0) {
-				return current.getSuggestions(lines, cursorLine, cursorCol, options);
+				const fallback = await current.getSuggestions(lines, cursorLine, cursorCol, options);
+				// Pi queues requests and each one reads the input when it runs, so a request our inline trigger started can
+				// see "hi /mod " and get Pi's empty-prefix file list, which Pi never asks for without Tab.
+				return fallback?.prefix === "" ? null : fallback;
 			}
 			for (const item of result.items) owned.add(item);
 			return { items: result.items, prefix: `/${query}` };
@@ -53,11 +57,10 @@ function createProvider(current: AutocompleteProvider): AutocompleteProvider {
 
 function patchEditor(): void {
 	const proto = Editor.prototype as any;
-	const originals = (proto[ORIGINALS] ??= {
-		isAtStartOfMessage: proto.isAtStartOfMessage,
-		isInSlashCommandContext: proto.isInSlashCommandContext,
-		handleInput: proto.handleInput,
-	});
+	const originals = (proto[ORIGINALS] ??= {});
+	for (const name of ["isAtStartOfMessage", "isInSlashCommandContext", "handleInput"]) {
+		originals[name] ??= proto[name];
+	}
 
 	proto.isAtStartOfMessage = function (this: any) {
 		if (originals.isAtStartOfMessage.call(this)) return true;

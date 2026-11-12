@@ -31,3 +31,7 @@ Pi runs a command or expands a skill only when the message starts with `/`. An i
 ## How it works
 
 Pi refuses `/` as an extension trigger character, so the extension wraps the editor's slash-context checks on `Editor.prototype` and stacks an autocomplete provider that asks pi's built-in provider for `/query` suggestions. The prototype originals are kept under a `Symbol.for` key, so `/reload` never stacks wrappers.
+
+## Test
+
+`scripts/tmux-smoke.sh` drives a real pi in tmux with only this extension loaded and checks the pane after each keystroke. It needs `pi` and `tmux` on `PATH`.
