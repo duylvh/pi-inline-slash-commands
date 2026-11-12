@@ -1,0 +1,15 @@
+{
+  "name": "pi-inline-slash-commands",
+  "version": "0.1.0",
+  "description": "Slash-command suggestions anywhere in the pi prompt, like Claude Code: type / mid-prompt to get the same command pane.",
+  "type": "module",
+  "license": "MIT",
+  "keywords": ["pi-package", "pi-extension", "slash-commands", "autocomplete"],
+  "repository": { "type": "git", "url": "git+https://github.com/duylvh/pi-inline-slash-commands.git" },
+  "files": ["index.ts", "README.md", "LICENSE"],
+  "pi": { "extensions": ["./index.ts"] },
+  "peerDependencies": {
+    "@earendil-works/pi-coding-agent": "*",
+    "@earendil-works/pi-tui": "*"
+  }
+}
